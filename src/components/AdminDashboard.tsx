@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Users, 
-  DollarSign, 
   Clock, 
   CheckCircle, 
   XCircle, 
@@ -12,6 +11,7 @@ import {
   LogOut,
   TrendingUp
 } from 'lucide-react';
+import Logo from './Logo';
 
 interface Enquiry {
   id: number;
@@ -99,8 +99,17 @@ const AdminDashboard: React.FC = () => {
     const pending = enquiries.filter(e => e.status === 'pending').length;
     const approved = enquiries.filter(e => e.status === 'approved').length;
     const rejected = enquiries.filter(e => e.status === 'rejected').length;
+    
+    // Calculate total loan amount for approved loans
+    const totalLoanAmount = enquiries
+      .filter(e => e.status === 'approved')
+      .reduce((sum, e) => {
+        // Extract numeric value from loan amount string (e.g., "10,00,000" -> 1000000)
+        const amount = e.loanAmount.replace(/[^\d]/g, '');
+        return sum + (parseInt(amount) || 0);
+      }, 0);
 
-    return { total, pending, approved, rejected };
+    return { total, pending, approved, rejected, totalLoanAmount };
   };
 
   const stats = getStats();
@@ -112,7 +121,7 @@ const AdminDashboard: React.FC = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
-              <DollarSign className="h-8 w-8 text-primary-600" />
+              <Logo size="small" />
               <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
             </div>
             <button
@@ -128,7 +137,7 @@ const AdminDashboard: React.FC = () => {
 
       <div className="container mx-auto px-4 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <div className="bg-white p-6 rounded-xl shadow-lg">
             <div className="flex items-center justify-between">
               <div>
@@ -173,6 +182,18 @@ const AdminDashboard: React.FC = () => {
               </div>
               <div className="bg-red-100 p-3 rounded-lg">
                 <XCircle className="h-6 w-6 text-red-600" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-6 rounded-xl shadow-lg text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-purple-100 text-sm">Total Approved Amount</p>
+                <p className="text-2xl font-bold">¥{stats.totalLoanAmount.toLocaleString('en-IN')}</p>
+              </div>
+              <div className="bg-white/20 p-3 rounded-lg">
+                <TrendingUp className="h-6 w-6 text-white" />
               </div>
             </div>
           </div>
@@ -272,7 +293,7 @@ const AdminDashboard: React.FC = () => {
                         {enquiry.loanType.charAt(0).toUpperCase() + enquiry.loanType.slice(1)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {enquiry.loanAmount}
+                        ¥{enquiry.loanAmount}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(enquiry.status)}`}>
@@ -342,7 +363,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-1">Loan Amount</h3>
-                  <p className="text-lg text-gray-900">{selectedEnquiry.loanAmount}</p>
+                  <p className="text-lg text-gray-900">¥{selectedEnquiry.loanAmount}</p>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-1">Application Date</h3>
